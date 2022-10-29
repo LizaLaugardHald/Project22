@@ -1,13 +1,12 @@
 from asyncio.windows_events import NULL
-from urllib import request
+from sre_constants import SUCCESS
 import requests
-from tkinter import Tk, Label, Entry, Button, Frame
+from tkinter import Tk, Label, Entry, Button, Frame, Toplevel
 
-USERNAME="liza.voros@hotmail.com"
-PASSWORD="liza123"
+#USERNAME="liza.voros@hotmail.com"
+#PASSWORD="liza123"
 
 host="https://raven-api-eu.clobotics.com"
-
 
 def validate_response(response):
     print(response)
@@ -36,37 +35,62 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
-# Function for attempting to login with the users credentials.
+#Class for handling login of the user.
+class Turbine(Toplevel):
+    def __init__(self, login_data):
+        super().__init__(master = master)
+
+        token = login_data["token"]
+        headers = {'Authorization': 'Token ' + token}
+        campaign_id = json_extract(login_data, 'id')
+        campaign_id = campaign_id[1] # Dårlig løsning. Find på noget bedre. Det skal være dynamisk. Modificer måske json_extract
+        
+
+        turbine_data = validate_response(
+            requests.get(host + "/api/v1/campaign/" + campaign_id + "/turbines/", headers=headers)
+        )
+
+        self.title("Turbine")
+        self.geometry("500x500")
+
+        print(turbine_data)
+        #we now need to extract the turbine data to variables we can call upon.
+
+        label = Label(self, text ="This is a new Window")
+        label.pack()
+
 def handle_click_login():
     try:
         #Convert the username and password from an entry object to a string
         username = username_entry.get()
         password = password_entry.get()
         print(username)
+        print(password)
         login_data = validate_response(
         requests.post(host + "/api/v1/auth/signin/", data={
             'email': username,
             'password': password
         })
         )
-        token = login_data["token"]
-        print(token)
+        #The user successfuly logged in, so now we create a new window.
+        turbine = Turbine(login_data)
+        master.withdraw()
     except:
-        print("Wrong username or password")
-    
+        login_label.config(text="Wrong username or password. Please try again.")
 
-root = Tk()
-frame = Frame(width=100, height=100)
+#Start of program
+master = Tk()
+master.title("Login")
+master.geometry("300x175")
 
-login_label = Label(master=frame, text="Login", width=50, height=2)
-login_username = Label(master=frame, text="Username:", width=50)
-username_entry = Entry(master=frame, width=50)
-login_password = Label(master=frame, text="Password:", width=50)
-password_entry = Entry(master=frame, width=50)
-login_button = Label(master=frame, width=50)
+login_label = Label(text="Login")
+login_username = Label(text="Username:")
+username_entry = Entry(width=35)
+login_password = Label(text="Password:")
+password_entry = Entry(width=35)
+login_button = Label()
 
-button = Button(master=frame, text="Login", width=50, command=handle_click_login)
-#button.bind("<Button-1>", )
+button = Button(text="Login", command=handle_click_login)
 
 login_label.pack()
 login_username.pack()
@@ -76,9 +100,9 @@ password_entry.pack()
 login_button.pack()
 button.pack()
 
-frame.pack()
+master.mainloop()
 
-root.mainloop()
+
 
 # token = login_data["token"]
 
