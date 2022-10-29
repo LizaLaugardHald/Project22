@@ -1,6 +1,7 @@
 from asyncio.windows_events import NULL
 from urllib import request
 import requests
+from tkinter import Tk, Label, Entry, Button, Frame
 
 USERNAME="liza.voros@hotmail.com"
 PASSWORD="liza123"
@@ -35,41 +36,68 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
-login_data = validate_response(
-    requests.post(host + "/api/v1/auth/signin/", data={
-        'email': USERNAME,
-        'password': PASSWORD
-    })
-)
+# Function for attempting to login with the users credentials.
+def handle_click_login():
+    try:
+        #Convert the username and password from an entry object to a string
+        username = username_entry.get()
+        password = password_entry.get()
+        print(username)
+        login_data = validate_response(
+        requests.post(host + "/api/v1/auth/signin/", data={
+            'email': username,
+            'password': password
+        })
+        )
+        token = login_data["token"]
+        print(token)
+    except:
+        print("Wrong username or password")
+    
 
-#print(login_data)
+root = Tk()
+frame = Frame(width=100, height=100)
 
-token = login_data["token"]
+login_label = Label(master=frame, text="Login", width=50, height=2)
+login_username = Label(master=frame, text="Username:", width=50)
+username_entry = Entry(master=frame, width=50)
+login_password = Label(master=frame, text="Password:", width=50)
+password_entry = Entry(master=frame, width=50)
+login_button = Label(master=frame, width=50)
 
-campaign_id = json_extract(login_data, 'id')
-campaign_id = campaign_id[1] # Dårlig løsning. Find på noget bedre. Det skal være dynamisk. Modificer måske json_extract
-#print(token)
-#print(campaign_id)
+button = Button(master=frame, text="Login", width=50, command=handle_click_login)
+#button.bind("<Button-1>", )
 
-#print(host + "/api/v1/campaign/" + campaign_id + "/turbines/")
+login_label.pack()
+login_username.pack()
+username_entry.pack()
+login_password.pack()
+password_entry.pack()
+login_button.pack()
+button.pack()
 
-headers_turbine = {'Authorization': 'Token ' + token}
-#print(headers_turbine)
+frame.pack()
 
-turbine_data = validate_response(
-    requests.get(host + "/api/v1/campaign/" + campaign_id + "/turbines/", headers=headers_turbine)
-)
-#print(turbine_data)
+root.mainloop()
 
-turbine_id = json_extract(turbine_data, 'id')
-turbine_id = turbine_id[0]
-#print(turbine_id)
+# token = login_data["token"]
 
-headers_defect = {'Authorization': 'Token ' + token}
+# campaign_id = json_extract(login_data, 'id')
+# campaign_id = campaign_id[1] # Dårlig løsning. Find på noget bedre. Det skal være dynamisk. Modificer måske json_extract
 
-defect_details_data = validate_response(
-    requests.get(host + "/api/v1/turbine/" + turbine_id + "/defects/detailed/", headers=headers_turbine)
-)
+# headers = {'Authorization': 'Token ' + token}
 
-print(defect_details_data)
+# turbine_data = validate_response(
+#     requests.get(host + "/api/v1/campaign/" + campaign_id + "/turbines/", headers=headers)
+# )
+# #print(turbine_data)
+
+# turbine_id = json_extract(turbine_data, 'id')
+# turbine_id = turbine_id[0]
+
+# defect_details_data = validate_response(
+#     requests.get(host + "/api/v1/turbine/" + turbine_id + "/defects/detailed/", headers=headers)
+# )
+
+#print(defect_details_data)
 
