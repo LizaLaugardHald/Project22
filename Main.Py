@@ -42,22 +42,34 @@ login_data = validate_response(
     })
 )
 
-print(login_data)
+#print(login_data)
 
 token = login_data["token"]
 
 campaign_id = json_extract(login_data, 'id')
 campaign_id = campaign_id[1] # Dårlig løsning. Find på noget bedre. Det skal være dynamisk. Modificer måske json_extract
-print(token)
-print(campaign_id)
+#print(token)
+#print(campaign_id)
+
+#print(host + "/api/v1/campaign/" + campaign_id + "/turbines/")
+
+headers_turbine = {'Authorization': 'Token ' + token}
+#print(headers_turbine)
 
 turbine_data = validate_response(
-    requests.get(host + "/api/v1/campaign/{campaign_id}/turbines/", headers={
-        'Authorization': "Token {token}"
-    })
+    requests.get(host + "/api/v1/campaign/" + campaign_id + "/turbines/", headers=headers_turbine)
+)
+#print(turbine_data)
+
+turbine_id = json_extract(turbine_data, 'id')
+turbine_id = turbine_id[0]
+#print(turbine_id)
+
+headers_defect = {'Authorization': 'Token ' + token}
+
+defect_details_data = validate_response(
+    requests.get(host + "/api/v1/turbine/" + turbine_id + "/defects/detailed/", headers=headers_turbine)
 )
 
-print(turbine_data)
-
-
+print(defect_details_data)
 
