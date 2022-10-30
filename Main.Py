@@ -1,8 +1,10 @@
 from asyncio.windows_events import NULL
 import requests
-from tkinter import Text, Tk, Label, Entry, Button, Toplevel
-import json
+from tkinter import END, Tk, Label, Entry, Button, Toplevel
 from types import SimpleNamespace
+from tkHyperlinkManager import HyperlinkManager
+import webbrowser
+from functools import partial
 
 #USERNAME="liza.voros@hotmail.com"
 #PASSWORD="liza123"
@@ -43,7 +45,38 @@ class Turbine(Toplevel):
         turbine_name = turbine['name']
 
         self.title("Turbine: " + turbine_name)
-        self.geometry("400x200")
+        self.geometry("700x200")
+
+        
+        #General turbine info
+        info_label = Label(self, text="General info:")
+        turbine_name_label = Label(self, text="Turbine name: " + turbine_name).pack()
+        turbine_id_label = Label(self, text="Id: " + turbine['id']).pack()
+        turbine_asset_serial_no_label = Label(self, text="Asset serial number: " + turbine['asset_serial_no']).pack()
+        turbine_component_length_label = Label(self, text="Component length: " + str(turbine['component_length'])).pack()
+        turbine_component_width_label = Label(self, text="Component width: " + str(turbine['component_width'])).pack()
+        turbine_tower_height_label = Label(self, text="Tower height: " + str(turbine['tower_height'])).pack()
+        turbine_gps_label = Label(self, text="GPS: Latitude: " + str(turbine['gps']['lat']) + ", Longtitude: " + str(turbine['gps']['lon'])).pack()
+        turbine_sessions_label = Label(self, text="Sessions: " + str(turbine['sessions'])).pack()
+
+        buffer_label = Label(self, text="").pack()
+
+        #Preconfiguration info
+        turbine_preconfiguration_label = Label(self, text="Preconfiguration: ").pack()
+        turbine_preconfiguration_id_label = Label(self, text="Preconfiguration id: " + turbine['preconfiguration']['id']).pack()
+        turbine_preconfiguration_name_label = Label(self, text="Preconfiguration name: " + turbine['preconfiguration']['name']).pack()
+        turbine_campaign_id_label = Label(self, text="Campaign id: " + turbine['preconfiguration']['campaign']['id']).pack()
+        turbine_campaign_name_label = Label(self, text="Campaign name: " + turbine['preconfiguration']['campaign']['name']).pack()
+
+        buffer_label = Label(self, text="").pack()
+
+        #PDFs
+        turbine_pdfs_label = Label(self, text="PDFs: ").pack()
+        for pdf in turbine['pdfs']:
+            turbine_pdf_label = Label(self).pack()
+            hyperlink= HyperlinkManager(turbine_pdf_label)
+            turbine_pdf_label.insert(END, "Filename: " + pdf['filename'], hyperlink.add(partial(webbrowser.open, pdf['blob'])))
+        
 
 
 #Class for handling login of the user.
@@ -68,9 +101,8 @@ class Turbines(Toplevel):
         self.title("Turbines")
         self.geometry("400x200")
 
-        #print(turbine_data)
-        #we now need to extract the turbine data to variables we can call upon.
-
+        print(turbine_data)#Delete this later. Used for debugging
+    
         turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":")
         turbines_label.pack()
 
