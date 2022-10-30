@@ -2,9 +2,11 @@ from asyncio.windows_events import NULL
 import requests
 from tkinter import END, Tk, Label, Entry, Button, Toplevel
 from types import SimpleNamespace
-from tkHyperlinkManager import HyperlinkManager
 import webbrowser
 from functools import partial
+import webbrowser
+from PIL import ImageTk,Image
+import io
 
 #USERNAME="liza.voros@hotmail.com"
 #PASSWORD="liza123"
@@ -38,16 +40,100 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
-class Turbine(Toplevel):
-    def __init__(self, turbine):
+class Turbine_Defect(Toplevel):
+    def __init__(self, defect):
         super().__init__(master = master)
+
+        defect_name = defect['defect_type']
+        self.title("Turbine defect: " + defect_name)
+        self.geometry("800x800")
+
+        defect_name_label = Label(self, text="Defect name: " + defect_name).pack()
+        defect_defect_id_label = Label(self, text="Defect id: " + defect['defect_id']).pack()
+        defect_distance_from_root_label = Label(self, text="Distance from root: " + str(defect['distance_from_root'])).pack()
+
+        step_count = 1
+        for step in defect['steps']:
+            buffer_label = Label(self, text="").pack()
+            step_count_label = Label(self, text="Step: " + str(step_count)).pack()
+            defect_elcometer_datapoint_label = Label(self, text="Elcometer datapoint:").pack()
+            defect_ts_label = Label(self, text="ts: " + str(step['elcometer_datapoint']['ts'])).pack()
+            defect_rh_label = Label(self, text="rh: " + str(step['elcometer_datapoint']['rh'])).pack()
+            defect_td_label = Label(self, text="td: " + str(step['elcometer_datapoint']['td'])).pack()
+            defect_tdelta_label = Label(self, text="tdelta: " + str(step['elcometer_datapoint']['tdelta'])).pack()
+            defect_tdb_label = Label(self, text="tdb: " + str(step['elcometer_datapoint']['tdb'])).pack()
+            defect_twb_label = Label(self, text="twb: " + str(step['elcometer_datapoint']['twb'])).pack()
+            defect_sh_label = Label(self, text="sh: " + str(step['elcometer_datapoint']['sh'])).pack()
+            defect_altitude_label = Label(self, text="Altitude: " + str(step['altitude'])).pack()
+            defect_root_distance_label = Label(self, text="Root distance: " + str(step['root_distance'])).pack()
+            defect_component_length_label = Label(self, text="Component length: " + str(step['component_length'])).pack()
+            defect_timestamp_label = Label(self, text="Timestamp: " + str(step['timestamp'])).pack()
+            defect_linked_label = Label(self, text="Linked: " + str(step['linked'])).pack()
+            defect_rep_step_label = Label(self, text="Rep step: " + str(step['rep_step'])).pack()
+            defect_rep_side_label = Label(self, text="Rep side: " + str(step['rep_side'])).pack()
+            defect_blade_label = Label(self, text="Blade: " + str(step['blade'])).pack()
+            defect_comment_label = Label(self, text="Comment: " + str(step['comment'])).pack()
+            defect_px_mm_label = Label(self, text="px mm: " + str(step['px_mm'])).pack()
+
+            buffer_label = Label(self, text="").pack()
+
+            if(step['damage_line_cords'] != None):
+                damage_line_cord_count = 1
+                for damage_line_cord in step['damage_line_cords']:
+                    damage_line_cord_count_label = Label(self, text="Damage line cord number: " + str(damage_line_cord_count)).pack()
+                    damage_line_cord_label = Label(self, text=str(damage_line_cord[0]) + ", " + str(damage_line_cord[1])).pack()
+                    buffer_label = Label(self, text="").pack()
+                    damage_line_cord_count = damage_line_cord_count + 1
+                step_count = step_count + 1
+
+            #Insert image.
+            image_label = Label(self, text="Image", fg="blue", cursor="hand2")
+            image_label.pack()
+            image_label.bind("<Button-1>", lambda e: webbrowser.open_new(step['image']['blob']))
+            defect_raven_label = Label(self, text="Raven: " + step['image']['raven']).pack()
+
+
+class Turbine_Defects(Toplevel):
+    def __init__(self, turbine_id, headers):
+        super().__init__(master = master)
+
+        def handle_turbine_defect_select(defect):
+            turbine_defect_window = Turbine_Defect(defect)
+        defect_details_data = validate_response(
+            requests.get(host + "/api/v1/turbine/" + turbine_id + "/defects/detailed/", headers=headers)
+        )
+
+        print(defect_details_data)
+
+        self.title("Turbine defects")
+        self.geometry("500x400")
+
+        error = "No"
+        if defect_details_data['error']:
+            error = "yes"
+        turbines_error_label = Label(self, text="Error: " + error).pack()
+        print("test")
+        if defect_details_data['message'] != None:
+            turbines_message_label = Label(self, text="Message: " + defect_details_data['message']).pack()
+
+        for defect in defect_details_data['data']['defects']:
+            defect_name = defect['defect_type']
+            defect_name_button = Button(self, text="Click for info on defect named: " + defect_name, command=lambda d=defect: handle_turbine_defect_select(d))
+            defect_name_button.pack()
+
+
+class Turbine(Toplevel):
+    def __init__(self, turbine, headers):
+        super().__init__(master = master)
+
+        def handle_turbine_defects(turbine_id, headers):
+            turbine_defects_window = Turbine_Defects(turbine_id, headers)
 
         turbine_name = turbine['name']
 
         self.title("Turbine: " + turbine_name)
-        self.geometry("400x800")
+        self.geometry("500x800")
 
-        
         #General turbine info
         info_label = Label(self, text="General info:")
         turbine_name_label = Label(self, text="Turbine name: " + turbine_name).pack()
@@ -62,43 +148,57 @@ class Turbine(Toplevel):
         buffer_label = Label(self, text="").pack()
 
         #Preconfiguration info
-        turbine_preconfiguration_label = Label(self, text="Preconfiguration: ").pack()
-        turbine_preconfiguration_id_label = Label(self, text="Preconfiguration id: " + turbine['preconfiguration']['id']).pack()
-        turbine_preconfiguration_name_label = Label(self, text="Preconfiguration name: " + turbine['preconfiguration']['name']).pack()
-        turbine_campaign_id_label = Label(self, text="Campaign id: " + turbine['preconfiguration']['campaign']['id']).pack()
-        turbine_campaign_name_label = Label(self, text="Campaign name: " + turbine['preconfiguration']['campaign']['name']).pack()
-        turbine_start_date_label = Label(self, text="Start date: " + turbine['preconfiguration']['campaign']['start_date']).pack()
-        turbine_end_date_label = Label(self, text="End date: " + turbine['preconfiguration']['campaign']['end_date']).pack()
-        is_active = "No"
-        if turbine['preconfiguration']['campaign']['active']:
-            is_active = "yes"
-        turbine_active_label = Label(self, text="Active: " + is_active).pack()
-        turbine_number_of_turbines_label = Label(self, text="Number_of_turbines: " + str(turbine['preconfiguration']['campaign']['number_of_turbines'])).pack()
-        turbine_project_ref_label = Label(self, text="Project reference: " + turbine['preconfiguration']['campaign']['project_ref']).pack()
-        turbine_last_inspected_ref_label = Label(self, text="Last inspected: " + turbine['preconfiguration']['campaign']['last_inspected']).pack()
-        turbine_project_manager_id_label = Label(self, text="Projekt manager id: " + turbine['preconfiguration']['campaign']['project_manager']['uid']).pack()
-        turbine_project_manager_name_label = Label(self, text="Projekt manager id: " + turbine['preconfiguration']['campaign']['project_manager']['name']).pack()
-        turbine_attatched_turbines_label = Label(self, text="Attached turbines: " + str(turbine['preconfiguration']['attatched_turbines'])).pack()
-        
-        buffer_label = Label(self, text="").pack()
+        if turbine['preconfiguration'] != None: #If there is no preconfiguration we do not display any more things.
+            turbine_preconfiguration_label = Label(self, text="Preconfiguration: ").pack()
+            turbine_preconfiguration_id_label = Label(self, text="Preconfiguration id: " + turbine['preconfiguration']['id']).pack()
+            turbine_preconfiguration_name_label = Label(self, text="Preconfiguration name: " + turbine['preconfiguration']['name']).pack()
+            turbine_campaign_id_label = Label(self, text="Campaign id: " + turbine['preconfiguration']['campaign']['id']).pack()
+            turbine_campaign_name_label = Label(self, text="Campaign name: " + turbine['preconfiguration']['campaign']['name']).pack()
+            turbine_start_date_label = Label(self, text="Start date: " + turbine['preconfiguration']['campaign']['start_date']).pack()
+            turbine_end_date_label = Label(self, text="End date: " + turbine['preconfiguration']['campaign']['end_date']).pack()
+            is_active = "No"
+            if turbine['preconfiguration']['campaign']['active']:
+                is_active = "yes"
+            turbine_active_label = Label(self, text="Active: " + is_active).pack()
+            turbine_number_of_turbines_label = Label(self, text="Number_of_turbines: " + str(turbine['preconfiguration']['campaign']['number_of_turbines'])).pack()
+            turbine_project_ref_label = Label(self, text="Project reference: " + turbine['preconfiguration']['campaign']['project_ref']).pack()
+            turbine_last_inspected_ref_label = Label(self, text="Last inspected: " + turbine['preconfiguration']['campaign']['last_inspected']).pack()
+            turbine_project_manager_id_label = Label(self, text="Projekt manager id: " + turbine['preconfiguration']['campaign']['project_manager']['uid']).pack()
+            turbine_project_manager_name_label = Label(self, text="Projekt manager id: " + turbine['preconfiguration']['campaign']['project_manager']['name']).pack()
+            turbine_attatched_turbines_label = Label(self, text="Attached turbines: " + str(turbine['preconfiguration']['attatched_turbines'])).pack()
+            
+            buffer_label = Label(self, text="").pack()
 
-        turbine_data_label = Label(self, text="Data:")
-        turbine_asset_type_label = Label(self, text="Asset type: " + turbine['preconfiguration']['data']['asset_type']).pack()
-        turbine_work_type_label = Label(self, text="Work type: " + turbine['preconfiguration']['data']['work_type']).pack()
-        turbine_work_type_label = Label(self, text="Eye to eye width: " + str(turbine['preconfiguration']['data']['eye_to_eye_width'])).pack()
-        turbine_site_name_label = Label(self, text="Site name: " + turbine['preconfiguration']['data']['site_name']).pack()
-        turbine_site_gps_label = Label(self, text="Site GPS: Latitude: " + str(turbine['preconfiguration']['data']['site_gps']['lat']) + ", Longitude: " + str(turbine['preconfiguration']['data']['site_gps']['lon'])).pack()
-        turbine_site_contry_label = Label(self, text="Site contry: " + turbine['preconfiguration']['data']['site_contry']).pack()
-        turbine_requester_of_inspection_label = Label(self, text="Requester of inspection: " + turbine['preconfiguration']['data']['requester_of_inspection']).pack()
+            turbine_data_label = Label(self, text="Data:").pack()
+            turbine_asset_type_label = Label(self, text="Asset type: " + turbine['preconfiguration']['data']['asset_type']).pack()
+            turbine_work_type_label = Label(self, text="Work type: " + turbine['preconfiguration']['data']['work_type']).pack()
+            turbine_work_type_label = Label(self, text="Eye to eye width: " + str(turbine['preconfiguration']['data']['eye_to_eye_width'])).pack()
+            turbine_site_name_label = Label(self, text="Site name: " + turbine['preconfiguration']['data']['site_name']).pack()
+            turbine_site_gps_label = Label(self, text="Site GPS: Latitude: " + str(turbine['preconfiguration']['data']['site_gps']['lat']) + ", Longitude: " + str(turbine['preconfiguration']['data']['site_gps']['lon'])).pack()
+            turbine_site_contry_label = Label(self, text="Site contry: " + turbine['preconfiguration']['data']['site_contry']).pack()
+            turbine_requester_of_inspection_label = Label(self, text="Requester of inspection: " + turbine['preconfiguration']['data']['requester_of_inspection']).pack()
 
-        buffer_label = Label(self, text="").pack()
+            buffer_label = Label(self, text="").pack()
 
         #PDFs
         turbine_pdfs_label = Label(self, text="PDFs: ").pack()
         for pdf in turbine['pdfs']:
-            turbine_pdf_label = Label(self).pack()
-            hyperlink= HyperlinkManager(turbine_pdf_label)
-            turbine_pdf_label.insert(END, "Filename: " + pdf['filename'], hyperlink.add(partial(webbrowser.open, pdf['blob'])))
+            def callback(url):
+                webbrowser.open_new(url)
+            pdf_label = Label(self, text="Filename: " + pdf['filename'], fg="blue", cursor="hand2")
+            pdf_label.pack()
+            pdf_label.bind("<Button-1>", lambda e: callback(pdf['blob']))
+
+        buffer_label = Label(self, text="").pack()
+
+        #Defects
+        Defects_button = Button(self, text="Click for info on turbine defects: ", command=lambda: handle_turbine_defects(turbine['id'], headers))
+        Defects_button.pack()
+
+        # for pdf in turbine['pdfs']:
+        #     turbine_pdf_label = Label(self).pack()
+        #     hyperlink= HyperlinkManager(turbine_pdf_label)
+        #     turbine_pdf_label.insert(END, "Filename: " + pdf['filename'], hyperlink.add(partial(webbrowser.open, pdf['blob'])))
         
 
 
@@ -108,8 +208,8 @@ class Turbines(Toplevel):
         super().__init__(master = master)
 
         #Function to show a window with information on a selected turbine.
-        def handle_turbine_select(turbine):
-            turbine_window = Turbine(turbine)
+        def handle_turbine_select(turbine, headers):
+            turbine_window = Turbine(turbine, headers)
 
         token = login_data["token"]
         headers = {'Authorization': 'Token ' + token}
@@ -124,14 +224,21 @@ class Turbines(Toplevel):
         self.title("Turbines")
         self.geometry("400x200")
 
-        print(turbine_data)#Delete this later. Used for debugging
+        #print(turbine_data)#Delete this later. Used for debugging
     
-        turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":")
-        turbines_label.pack()
+        error = "No"
+        if turbine_data['error']:
+            error = "yes"
+        turbines_error_label = Label(self, text="Error: " + error).pack()
+        print("test")
+        if turbine_data['message'] != None:
+            turbines_message_label = Label(self, text="Message: " + turbine_data['message']).pack()
+
+        turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":").pack()
 
         for turbine in turbine_data['turbines']:
             turbine_name = turbine['name']
-            turbine_name_button = Button(self, text="Click for info on turbine named: " + turbine_name, command=lambda t=turbine: handle_turbine_select(t))
+            turbine_name_button = Button(self, text="Click for info on turbine named: " + turbine_name, command=lambda t=turbine: handle_turbine_select(t, headers))
             turbine_name_button.pack()
 
         print("made it to here")
