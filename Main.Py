@@ -1,7 +1,8 @@
 from asyncio.windows_events import NULL
-from sre_constants import SUCCESS
 import requests
-from tkinter import Tk, Label, Entry, Button, Frame, Toplevel
+from tkinter import Text, Tk, Label, Entry, Button, Toplevel
+import json
+from types import SimpleNamespace
 
 #USERNAME="liza.voros@hotmail.com"
 #PASSWORD="liza123"
@@ -35,10 +36,24 @@ def json_extract(obj, key):
     values = extract(obj, arr, key)
     return values
 
-#Class for handling login of the user.
 class Turbine(Toplevel):
+    def __init__(self, turbine):
+        super().__init__(master = master)
+
+        turbine_name = turbine['name']
+
+        self.title("Turbine: " + turbine_name)
+        self.geometry("400x200")
+
+
+#Class for handling login of the user.
+class Turbines(Toplevel):
     def __init__(self, login_data):
         super().__init__(master = master)
+
+        #Function to show a window with information on a selected turbine.
+        def handle_turbine_select(turbine):
+            turbine_window = Turbine(turbine)
 
         token = login_data["token"]
         headers = {'Authorization': 'Token ' + token}
@@ -50,14 +65,22 @@ class Turbine(Toplevel):
             requests.get(host + "/api/v1/campaign/" + campaign_id + "/turbines/", headers=headers)
         )
 
-        self.title("Turbine")
-        self.geometry("500x500")
+        self.title("Turbines")
+        self.geometry("400x200")
 
-        print(turbine_data)
+        #print(turbine_data)
         #we now need to extract the turbine data to variables we can call upon.
 
-        label = Label(self, text ="This is a new Window")
-        label.pack()
+        turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":")
+        turbines_label.pack()
+
+        for turbine in turbine_data['turbines']:
+            turbine_name = turbine['name']
+            turbine_name_button = Button(self, text="Click for info on turbine named: " + turbine_name, command=lambda t=turbine: handle_turbine_select(t))
+            turbine_name_button.pack()
+
+        print("made it to here")
+
 
 def handle_click_login():
     try:
@@ -73,7 +96,7 @@ def handle_click_login():
         })
         )
         #The user successfuly logged in, so now we create a new window.
-        turbine = Turbine(login_data)
+        turbines = Turbines(login_data)
         master.withdraw()
     except:
         login_label.config(text="Wrong username or password. Please try again.")
