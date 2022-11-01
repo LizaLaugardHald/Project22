@@ -1,4 +1,5 @@
 def validate_response(response):
+    print(response)
     response_data = response.json()
     assert response.ok
     assert not response_data["error"]

@@ -9,7 +9,7 @@ class Login(Toplevel):
     def __init__(self, master):
         super().__init__(master = master)
 
-        def handle_click_login():
+        def handle_click_login(username_entry, password_entry):
             try:
                 #Convert the username and password from an entry object to a string
                 username = username_entry.get()
@@ -21,9 +21,10 @@ class Login(Toplevel):
                     })
                 )
                 #The user successfuly logged in, so now we create a new window.
+                
                 turbines = Turbines(login_data, master)
             except:
-                login_label.config(text="Wrong username or password. Please try again.")
+                print("Wrong username or password")#m.config(text="Wrong username or password. Please try again.")
 
         self.title("Login")
         self.geometry("800x711")
@@ -37,11 +38,11 @@ class Login(Toplevel):
 
         login_label = Label(self, text="Login:").place(x=500, y=250)
         login_username = Label(self, text="Username:").place(x=500, y=270)
-        username_entry = Entry(self, width=35).place(x=500, y=290)
+        username_entry = Entry(self, width=35)
+        username_entry.place(x=500, y=290)
         login_password = Label(self, text="Password:").place(x=500, y=310)
-        password_entry = Entry(self, width=35).place(x=500, y=330)
+        password_entry = Entry(self, width=35)
+        password_entry.place(x=500, y=330)
 
-        button = Button(self, text="Login", command=handle_click_login())
+        button = Button(self, text="Login", command=lambda:handle_click_login(username_entry, password_entry))
         button.place(x=500, y=360)
-
-        print('test')
