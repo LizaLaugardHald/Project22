@@ -12,7 +12,6 @@ class Turbine(Toplevel):
         turbine_name = turbine['name']
 
         self.title("Turbine: " + turbine_name)
-        self.geometry("800x711")
         self.iconbitmap('ZentoSoft.ico')
 
         #General turbine info

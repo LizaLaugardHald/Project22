@@ -7,7 +7,7 @@ class Turbine_Defect(Toplevel):
 
         defect_name = defect['defect_type']
         self.title("Turbine defect: " + defect_name)
-        self.geometry("800x711")
+        self.geometry("800x800")
         self.iconbitmap('ZentoSoft.ico')
 
         cframe = Frame(self)
