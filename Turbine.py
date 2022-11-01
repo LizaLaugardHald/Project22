@@ -12,6 +12,8 @@ class Turbine(Toplevel):
         turbine_name = turbine['name']
 
         self.title("Turbine: " + turbine_name)
+        self.geometry("800x711")
+        self.iconbitmap('ZentoSoft.ico')
 
         #General turbine info
         info_label = Label(self, text="General info:", font="bold").pack(anchor="w")

@@ -27,6 +27,7 @@ class Login(Toplevel):
 
         self.title("Login")
         self.geometry("800x711")
+        self.iconbitmap('ZentoSoft.ico')
         
         vindmoelle_image = Image.open("Vindmoelle.png")
         resize_image = vindmoelle_image.resize((400, 711))

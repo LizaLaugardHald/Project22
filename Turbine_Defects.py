@@ -14,6 +14,8 @@ class Turbine_Defects(Toplevel):
         )
 
         self.title("Turbine defects")
+        self.geometry("800x711")
+        self.iconbitmap('ZentoSoft.ico')
 
         error = "No"
         if defect_details_data['error']:
