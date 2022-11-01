@@ -1,6 +1,5 @@
-from turtle import width
 import requests
-from tkinter import E, N, Image, Label, Entry, Button, PhotoImage, Toplevel, W, Frame
+from tkinter import Image, Label, Entry, Button, Toplevel, W
 from Helper_Functions import validate_response, host
 from Turbines import Turbines
 from PIL import ImageTk, Image
@@ -36,13 +35,13 @@ class Login(Toplevel):
         image.image = img
         image.grid(column=0, row=0, rowspan=7, sticky=W)
 
-        login_label = Label(self, text="Login:").place(x=500, y=250)
-        login_username = Label(self, text="Username:").place(x=500, y=270)
+        login_label = Label(self, text="Login:", font="bold").place(x=500, y=250)
+        login_username = Label(self, text="Username:", font="bold").place(x=500, y=280)
         username_entry = Entry(self, width=35)
-        username_entry.place(x=500, y=290)
-        login_password = Label(self, text="Password:").place(x=500, y=310)
-        password_entry = Entry(self, width=35)
-        password_entry.place(x=500, y=330)
+        username_entry.place(x=500, y=305)
+        login_password = Label(self, text="Password:", font="bold").place(x=500, y=330)
+        password_entry = Entry(self, width=35, show="*")
+        password_entry.place(x=500, y=355)
 
-        button = Button(self, text="Login", command=lambda:handle_click_login(username_entry, password_entry))
-        button.place(x=500, y=360)
+        button = Button(self, text="Login", command=lambda:handle_click_login(username_entry, password_entry), font="bold")
+        button.place(x=500, y=385)

@@ -22,21 +22,20 @@ class Turbines(Toplevel):
         )
 
         self.title("Turbines")
-        self.geometry("400x200")
 
         #print(turbine_data)#Delete this later. Used for debugging
     
         error = "No"
         if turbine_data['error']:
             error = "yes"
-        turbines_error_label = Label(self, text="Error: " + error).pack()
+        turbines_error_label = Label(self, text="Error: " + error).pack(anchor="w")
 
         if turbine_data['message'] != None:
-            turbines_message_label = Label(self, text="Message: " + turbine_data['message']).pack()
+            turbines_message_label = Label(self, text="Message: " + turbine_data['message']).pack(anchor="w")
 
-        turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":").pack()
+        turbines_label = Label(self, text="Turbines in campaign " + campaign_id + ":").pack(anchor="w")
 
         for turbine in turbine_data['turbines']:
             turbine_name = turbine['name']
-            turbine_name_button = Button(self, text="Click for info on turbine named: " + turbine_name, command=lambda t=turbine: handle_turbine_select(t, headers, master))
-            turbine_name_button.pack()
+            turbine_name_button = Button(self, text="Click for info on turbine named: " + turbine_name, command=lambda t=turbine: handle_turbine_select(t, headers, master), font="bold")
+            turbine_name_button.pack(anchor="w")
