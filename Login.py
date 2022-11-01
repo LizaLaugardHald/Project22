@@ -1,7 +1,9 @@
+from turtle import width
 import requests
-from tkinter import Label, Entry, Button, Toplevel
+from tkinter import E, N, Image, Label, Entry, Button, PhotoImage, Toplevel, W, Frame
 from Helper_Functions import validate_response, host
 from Turbines import Turbines
+from PIL import ImageTk, Image
 
 class Login(Toplevel):
     def __init__(self, master):
@@ -24,21 +26,22 @@ class Login(Toplevel):
                 login_label.config(text="Wrong username or password. Please try again.")
 
         self.title("Login")
-        self.geometry("300x175")
+        self.geometry("800x711")
+        
+        vindmoelle_image = Image.open("Vindmoelle.png")
+        resize_image = vindmoelle_image.resize((400, 711))
+        img = ImageTk.PhotoImage(resize_image)
+        image = Label(self, image=img)
+        image.image = img
+        image.grid(column=0, row=0, rowspan=7, sticky=W)
 
-        login_label = Label(self, text="Login")
-        login_username = Label(self, text="Username:")
-        username_entry = Entry(self, width=35)
-        login_password = Label(self, text="Password:")
-        password_entry = Entry(self, width=35)
-        login_button = Label(self)
+        login_label = Label(self, text="Login:").place(x=500, y=250)
+        login_username = Label(self, text="Username:").place(x=500, y=270)
+        username_entry = Entry(self, width=35).place(x=500, y=290)
+        login_password = Label(self, text="Password:").place(x=500, y=310)
+        password_entry = Entry(self, width=35).place(x=500, y=330)
 
-        button = Button(self, text="Login", command=handle_click_login)
+        button = Button(self, text="Login", command=handle_click_login())
+        button.place(x=500, y=360)
 
-        login_label.pack()
-        login_username.pack()
-        username_entry.pack()
-        login_password.pack()
-        password_entry.pack()
-        login_button.pack()
-        button.pack()
+        print('test')
