@@ -1,4 +1,4 @@
-# Project22
+# Wind_Turbine_Campaign
 
 ### **_Introduction_**
 This progam gives an overview of the type of turbines in the current campaign. Additionally, it also shows information on each of the turbines and their defects.
